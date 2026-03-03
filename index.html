@@ -668,6 +668,8 @@
     font-family: 'DM Sans', sans-serif; transition: all 0.15s;
   }
   .ai-chip:active { background: var(--accent); color: #0a0a0a; border-color: var(--accent); }
+  .active-chip { background: var(--accent) !important; color: #0a0a0a !important; border-color: var(--accent) !important; font-weight: 600; }
+  #chips-technique, #chips-program, #chips-progress, #chips-nutrition { margin-bottom: 8px; }
 
   /* ---- EXERCISE GIF ---- */
   .ex-gif-btn {
@@ -869,20 +871,58 @@
     <div class="section-title" style="padding:0;margin-top:16px;">AI ТРЕНЕР</div>
     <div class="ai-key-bar">
       <input class="ai-key-input" type="password" id="aiKeyInput" placeholder="DeepSeek API Key (sk-...)">
-      <button class="ai-key-save" onclick="saveAiKey()">Сохранить</button>
+      <button class="ai-key-save" onclick="saveAiKey()">💾</button>
     </div>
-    <div class="ai-chips">
-      <button class="ai-chip" onclick="aiQuick('Как правильно делать жим лёжа? Техника и ошибки.')">🏋️ Жим лёжа</button>
-      <button class="ai-chip" onclick="aiQuick('Как правильно делать приседания со штангой? Техника.')">🦵 Приседания</button>
-      <button class="ai-chip" onclick="aiQuick('Составь программу тренировок на 3 дня в неделю для набора массы.')">📋 Программа</button>
-      <button class="ai-chip" onclick="aiQuickWorkout()">📊 Анализ моих тренировок</button>
+
+    <!-- Category tabs -->
+    <div style="display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;scrollbar-width:none;">
+      <button class="ai-chip active-chip" onclick="showChipGroup('technique',this)">🎯 Техника</button>
+      <button class="ai-chip" onclick="showChipGroup('program',this)">📋 Программа</button>
+      <button class="ai-chip" onclick="showChipGroup('progress',this)">📈 Прогресс</button>
+      <button class="ai-chip" onclick="showChipGroup('nutrition',this)">🥗 Питание</button>
     </div>
+
+    <!-- Chip groups -->
+    <div id="chips-technique" class="ai-chips">
+      <button class="ai-chip" onclick="aiCmd('technique',null)">📹 Как делать упражнение</button>
+      <button class="ai-chip" onclick="aiCmd('mistakes',null)">⚠️ Частые ошибки</button>
+      <button class="ai-chip" onclick="aiCmd('warmup',null)">🔥 Как разминаться</button>
+      <button class="ai-chip" onclick="aiCmd('breathe',null)">💨 Дыхание</button>
+    </div>
+    <div id="chips-program" class="ai-chips" style="display:none">
+      <button class="ai-chip" onclick="aiCmd('program_mass',null)">💪 Набор массы</button>
+      <button class="ai-chip" onclick="aiCmd('program_cut',null)">✂️ Сушка</button>
+      <button class="ai-chip" onclick="aiCmd('improve_program',null)">🔄 Улучшить мою программу</button>
+      <button class="ai-chip" onclick="aiCmd('next_workout',null)">➡️ Что делать сегодня</button>
+    </div>
+    <div id="chips-progress" class="ai-chips" style="display:none">
+      <button class="ai-chip" onclick="aiCmd('analyze',null)">🔍 Анализ тренировок</button>
+      <button class="ai-chip" onclick="aiCmd('progression',null)">📊 Как прогрессировать</button>
+      <button class="ai-chip" onclick="aiCmd('plateau',null)">😤 Застрял на весе</button>
+      <button class="ai-chip" onclick="aiCmd('recovery',null)">😴 Восстановление</button>
+    </div>
+    <div id="chips-nutrition" class="ai-chips" style="display:none">
+      <button class="ai-chip" onclick="aiCmd('calories',null)">🔢 Сколько калорий</button>
+      <button class="ai-chip" onclick="aiCmd('protein',null)">🥩 Белок — сколько нужно</button>
+      <button class="ai-chip" onclick="aiCmd('pre_workout',null)">⚡ Что есть до тренировки</button>
+      <button class="ai-chip" onclick="aiCmd('post_workout',null)">🍌 Что есть после</button>
+    </div>
+
+    <!-- Exercise picker for technique commands -->
+    <div id="exPickerWrap" style="display:none;margin-bottom:8px;">
+      <select id="exPicker" class="chart-select" style="margin-bottom:0" onchange="exPickerChanged()">
+        <option value="">Выбери упражнение...</option>
+      </select>
+    </div>
+
     <div class="ai-chat">
       <div class="ai-messages" id="aiMessages">
-        <div class="ai-msg bot">Привет! Я твой AI тренер 💪 Спроси как делать упражнение, попроси составить программу или проанализировать твои тренировки.</div>
+        <div class="ai-msg bot">Привет! Я твой тренер 💪
+
+Выбери команду выше или напиши сам. Я знаю твои тренировки и дам конкретный совет.</div>
       </div>
       <div class="ai-input-row">
-        <textarea class="ai-input" id="aiInput" placeholder="Спроси что угодно..." rows="1"
+        <textarea class="ai-input" id="aiInput" placeholder="Или напиши свой вопрос..." rows="1"
           onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAiMsg();}"></textarea>
         <button class="ai-send" onclick="sendAiMsg()">↑</button>
       </div>
@@ -1423,79 +1463,158 @@ function closeGif() {
 // ---- AI TRAINER ----
 let aiKey = localStorage.getItem('deepseekKey') || '';
 let aiHistory = [];
+let pendingCmd = null;
+
+const SYSTEM_PROMPT = `Ты персональный фитнес-тренер. Правила ответов:
+1. Отвечай ТОЛЬКО на русском
+2. Максимум 5-7 коротких пунктов или 3-4 предложения
+3. Никакой воды — только конкретика
+4. Если спрашивают технику — дай 4-5 пронумерованных шагов
+5. Если просят программу — дай таблицу: День / Упражнение / Подходы×Повторения
+6. Если анализируешь тренировки — укажи конкретно что хорошо и 2-3 пункта что улучшить
+7. Используй эмодзи для визуального разделения пунктов`;
+
+function getWorkoutContext() {
+  if (!history.length) return 'Тренировок пока нет.';
+  return 'Мои последние тренировки:\n' + history.slice(0, 7).map(e =>
+    e.date + ': ' + e.exercises.map(ex =>
+      ex.name + ' — ' + ex.sets.map(s => (s.weight||'?') + 'кг×' + (s.reps||'?')).join(', ')
+    ).join('; ')
+  ).join('\n');
+}
+
+function getCurrentExercises() {
+  return 'Мои упражнения: ' + exercises.map(e => e.name + ' (' + e.muscle + ')').join(', ');
+}
+
+const AI_COMMANDS = {
+  technique:      ex => `Объясни технику выполнения "${ex}" — только ключевые шаги и на что обратить внимание.`,
+  mistakes:       ex => `Какие 3-4 главные ошибки при выполнении "${ex}" и как их избежать?`,
+  warmup:         ex => `Как разминаться перед "${ex}"? Дай конкретные упражнения и время.`,
+  breathe:        ex => `Как правильно дышать при выполнении "${ex}"?`,
+  program_mass:   ()  => `${getCurrentExercises()}\n\nСоставь программу на набор массы 3-4 дня в неделю на основе моих упражнений. Формат: День — Упражнение — Подходы×Повторения — Отдых.`,
+  program_cut:    ()  => `${getCurrentExercises()}\n\nСоставь программу на сушку 3-4 дня в неделю. Формат: День — Упражнение — Подходы×Повторения.`,
+  improve_program:()  => `${getWorkoutContext()}\n\n${getCurrentExercises()}\n\nЧто конкретно изменить в моей программе? Дай 3-4 пункта.`,
+  next_workout:   ()  => `${getWorkoutContext()}\n\nЧто мне лучше сделать на следующей тренировке? Учти последние сессии.`,
+  analyze:        ()  => `${getWorkoutContext()}\n\nПроанализируй мой прогресс. Что хорошо, что улучшить?`,
+  progression:    ()  => `${getWorkoutContext()}\n\nКак мне прогрессировать дальше? Конкретная схема увеличения весов.`,
+  plateau:        ()  => `${getWorkoutContext()}\n\nЯ застрял на одних весах. Что делать? Дай 3-4 конкретных способа.`,
+  recovery:       ()  => `Сколько мне отдыхать между тренировками и как восстанавливаться быстрее? Коротко.`,
+  calories:       ()  => `Как посчитать сколько калорий мне нужно для набора массы / сушки? Дай формулу и пример.`,
+  protein:        ()  => `Сколько белка нужно в день при силовых тренировках? Коротко и с примерами продуктов.`,
+  pre_workout:    ()  => `Что есть за 1-2 часа до тренировки? Топ-5 вариантов с количеством.`,
+  post_workout:   ()  => `Что есть после тренировки? Топ-5 вариантов для восстановления и роста.`,
+};
+
+const NEEDS_EXERCISE = ['technique','mistakes','warmup','breathe'];
+
+function showChipGroup(group, btn) {
+  ['technique','program','progress','nutrition'].forEach(g => {
+    document.getElementById('chips-' + g).style.display = g === group ? 'flex' : 'none';
+  });
+  document.querySelectorAll('.ai-chip').forEach(c => c.classList.remove('active-chip'));
+  btn.classList.add('active-chip');
+  document.getElementById('exPickerWrap').style.display = 'none';
+  pendingCmd = null;
+}
+
+function aiCmd(cmd, exName) {
+  if (NEEDS_EXERCISE.includes(cmd) && !exName) {
+    // Show exercise picker
+    pendingCmd = cmd;
+    const picker = document.getElementById('exPicker');
+    picker.innerHTML = '<option value="">Выбери упражнение...</option>';
+    exercises.forEach(ex => {
+      const opt = document.createElement('option');
+      opt.value = ex.name; opt.textContent = ex.name;
+      picker.appendChild(opt);
+    });
+    document.getElementById('exPickerWrap').style.display = 'block';
+    return;
+  }
+  document.getElementById('exPickerWrap').style.display = 'none';
+  const fn = AI_COMMANDS[cmd];
+  if (!fn) return;
+  const msg = exName ? fn(exName) : fn();
+  sendAiWithText(msg, cmd + (exName ? ': ' + exName : ''));
+}
+
+function exPickerChanged() {
+  const ex = document.getElementById('exPicker').value;
+  if (ex && pendingCmd) {
+    aiCmd(pendingCmd, ex);
+    pendingCmd = null;
+  }
+}
 
 function saveAiKey() {
   const val = document.getElementById('aiKeyInput').value.trim();
-  if (val) { aiKey = val; localStorage.setItem('deepseekKey', val); }
-  alert('Ключ сохранён ✅');
+  if (!val) return;
+  aiKey = val;
+  localStorage.setItem('deepseekKey', val);
+  const btn = document.querySelector('.ai-key-save');
+  btn.textContent = '✅'; setTimeout(() => btn.textContent = '💾', 2000);
 }
 
 function initAiPage() {
   if (aiKey) document.getElementById('aiKeyInput').value = aiKey;
 }
 
-function aiQuick(msg) {
-  document.getElementById('aiInput').value = msg;
-  sendAiMsg();
-}
-
-function aiQuickWorkout() {
-  const summary = history.slice(0, 5).map(e =>
-    e.date + ': ' + e.exercises.map(ex =>
-      ex.name + ' ' + ex.sets.map(s => s.weight + 'кг×' + s.reps).join(', ')
-    ).join('; ')
-  ).join('\n');
-  const msg = 'Вот мои последние тренировки:\n' + (summary || 'Данных пока нет') + '\n\nПроанализируй прогресс и дай рекомендации.';
-  aiQuick(msg);
-}
-
 function addAiMsg(text, role) {
   const box = document.getElementById('aiMessages');
   const div = document.createElement('div');
   div.className = 'ai-msg ' + role;
+  div.style.whiteSpace = 'pre-wrap';
   div.textContent = text;
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
   return div;
 }
 
+async function sendAiWithText(fullText, displayText) {
+  if (!aiKey) { alert('Введи DeepSeek API ключ'); return; }
+  addAiMsg(displayText || fullText, 'user');
+  aiHistory.push({ role: 'user', content: fullText });
+  await callAI();
+}
+
 async function sendAiMsg() {
   const input = document.getElementById('aiInput');
   const text = input.value.trim();
   if (!text) return;
-  if (!aiKey) { alert('Сначала введи DeepSeek API ключ вверху'); return; }
-
+  if (!aiKey) { alert('Введи DeepSeek API ключ'); return; }
   input.value = '';
   addAiMsg(text, 'user');
   aiHistory.push({ role: 'user', content: text });
+  await callAI();
+}
 
-  const typing = addAiMsg('Печатает...', 'bot typing');
-
+async function callAI() {
+  const typing = addAiMsg('⏳', 'bot typing');
   try {
     const res = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + aiKey
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + aiKey },
       body: JSON.stringify({
         model: 'deepseek-chat',
         messages: [
-          { role: 'system', content: 'Ты профессиональный фитнес-тренер. Отвечай на русском языке, кратко и практично. Давай конкретные советы по технике упражнений, программам тренировок и прогрессии нагрузок.' },
-          ...aiHistory
+          { role: 'system', content: SYSTEM_PROMPT },
+          ...aiHistory.slice(-12)
         ],
-        max_tokens: 600,
+        max_tokens: 500,
+        temperature: 0.7,
         stream: false
       })
     });
     const data = await res.json();
-    const reply = data.choices?.[0]?.message?.content || 'Ошибка ответа';
+    if (data.error) throw new Error(data.error.message);
+    const reply = data.choices?.[0]?.message?.content || '—';
     typing.textContent = reply;
     typing.classList.remove('typing');
     aiHistory.push({ role: 'assistant', content: reply });
-    if (aiHistory.length > 20) aiHistory = aiHistory.slice(-20);
+    if (aiHistory.length > 16) aiHistory = aiHistory.slice(-16);
   } catch(e) {
-    typing.textContent = '❌ Ошибка: ' + e.message;
+    typing.textContent = '❌ ' + e.message;
     typing.classList.remove('typing');
   }
 }
