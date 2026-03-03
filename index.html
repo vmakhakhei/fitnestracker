@@ -725,6 +725,109 @@
     font-size: 12px; color: var(--accent); font-weight: 600;
     margin-top: 8px;
   }
+
+  /* Body weight tracker */
+  .weight-input-row {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 10px;
+  }
+  .weight-num-input {
+    flex:1; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 14px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 18px; font-weight: 600;
+    text-align: center; outline: none;
+  }
+  .btn-weight-log {
+    padding: 10px 18px; background: var(--accent); border: none;
+    border-radius: 10px; color: #0a0a0a; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+  .weight-current {
+    font-family: 'Bebas Neue', sans-serif; font-size: 42px;
+    color: var(--accent); text-align: center; line-height: 1;
+  }
+  .weight-label { font-size: 11px; color: var(--muted); text-align: center; letter-spacing: 1px; text-transform: uppercase; }
+
+  /* Photo progress */
+  .photo-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 6px; margin-top: 8px;
+  }
+  .photo-thumb {
+    aspect-ratio: 1; border-radius: 8px; overflow: hidden;
+    border: 1px solid var(--border); position: relative; cursor: pointer;
+  }
+  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-thumb .photo-date {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,0.7); font-size: 9px; color: var(--muted);
+    padding: 2px 4px; text-align: center;
+  }
+  .photo-add-btn {
+    aspect-ratio: 1; border-radius: 8px;
+    border: 2px dashed var(--border); background: transparent;
+    color: var(--muted); font-size: 28px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .photo-full-modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+    z-index: 300; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .photo-full-modal.hidden { display: none; }
+  .photo-full-modal img { max-width: 100%; max-height: 70vh; border-radius: 12px; }
+  .photo-full-date { color: var(--muted); font-size: 13px; margin-top: 10px; }
+  .photo-full-close {
+    margin-top: 14px; padding: 12px 32px; background: var(--accent);
+    border: none; border-radius: 12px; color: #0a0a0a;
+    font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  .photo-full-delete {
+    margin-top: 8px; padding: 8px 20px; background: transparent;
+    border: 1px solid var(--accent2); border-radius: 10px; color: var(--accent2);
+    font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer;
+  }
+
+  /* Programs A/B/C */
+  .program-tabs {
+    display: flex; gap: 6px; margin-bottom: 12px;
+  }
+  .prog-tab {
+    flex: 1; padding: 10px; border-radius: 10px;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--muted); font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px; letter-spacing: 2px; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .prog-tab.active { background: var(--accent); color: #0a0a0a; border-color: var(--accent); }
+  .prog-day { display: none; }
+  .prog-day.active { display: block; }
+  .prog-ex-row {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px; margin-bottom: 6px;
+  }
+  .prog-ex-name { flex: 1; font-size: 14px; font-weight: 600; }
+  .prog-ex-sets { font-size: 12px; color: var(--muted); }
+  .btn-load-program {
+    width: 100%; padding: 14px; margin-top: 10px;
+    background: var(--accent); border: none; border-radius: 12px;
+    color: #0a0a0a; font-family: 'DM Sans', sans-serif;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  .btn-load-program:active { transform: scale(0.98); }
+
+  /* AI counter */
+  .ai-counter {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0; margin-bottom: 8px;
+  }
+  .ai-counter-label { font-size: 11px; color: var(--muted); letter-spacing: 0.5px; }
+  .ai-counter-val { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--accent); }
+  .ai-cache-badge {
+    display: inline-block; background: #1a2d0a; border: 1px solid var(--accent);
+    border-radius: 6px; padding: 2px 8px; font-size: 11px; color: var(--accent);
+    margin-left: 6px;
+  }
 </style>
 </head>
 <body>
@@ -762,6 +865,7 @@
   <button class="tab" onclick="switchPage('manage',this)">Упражнения</button>
   <button class="tab" onclick="switchPage('ai',this)">🤖 AI</button>
   <button class="tab" onclick="switchPage('progress',this)">📈 Прогресс</button>
+  <button class="tab" onclick="switchPage('programs',this)">🗓 Программы</button>
 </div>
 
 <!-- TODAY PAGE -->
@@ -869,6 +973,10 @@
 <div class="page" id="page-ai">
   <div class="ai-page">
     <div class="section-title" style="padding:0;margin-top:16px;">AI ТРЕНЕР</div>
+    <div class="ai-counter">
+      <span class="ai-counter-label">ЗАПРОСОВ В ЭТОМ МЕСЯЦЕ</span>
+      <span class="ai-counter-val" id="aiCounterVal">0</span>
+    </div>
     <div class="ai-key-bar">
       <input class="ai-key-input" type="password" id="aiKeyInput" placeholder="DeepSeek API Key (sk-...)">
       <button class="ai-key-save" onclick="saveAiKey()">💾</button>
@@ -933,19 +1041,88 @@
 <!-- PROGRESS PAGE -->
 <div class="page" id="page-progress">
   <div class="section">
-    <div class="section-title">ПРОГРЕСС</div>
-    <select class="chart-select" id="progressExSelect" onchange="renderProgressChart()">
-      <option value="">Выбери упражнение...</option>
-    </select>
-    <div class="chart-wrap">
-      <div class="chart-empty" id="chartEmpty">Выбери упражнение чтобы увидеть прогресс</div>
-      <canvas id="progressChart" style="display:none"></canvas>
+    <!-- Sub-tabs -->
+    <div style="display:flex;gap:6px;padding:16px 0 4px;overflow-x:auto;scrollbar-width:none;">
+      <button class="ai-chip active-chip" onclick="showProgressTab('weights',this)">⚡ Веса</button>
+      <button class="ai-chip" onclick="showProgressTab('bodyweight',this)">⚖️ Вес тела</button>
+      <button class="ai-chip" onclick="showProgressTab('photos',this)">📸 Фото</button>
+      <button class="ai-chip" onclick="showProgressTab('records',this)">🏆 Рекорды</button>
     </div>
-    <div id="prBadgeWrap" style="margin-top:8px;"></div>
 
-    <div class="section-title" style="margin-top:20px;">РЕКОРДЫ</div>
-    <div id="prList"></div>
+    <!-- WEIGHTS TAB -->
+    <div id="ptab-weights">
+      <div class="section-title">ПРОГРЕСС ПО УПРАЖНЕНИЯМ</div>
+      <select class="chart-select" id="progressExSelect" onchange="renderProgressChart()">
+        <option value="">Выбери упражнение...</option>
+      </select>
+      <div class="chart-wrap">
+        <div class="chart-empty" id="chartEmpty">Выбери упражнение чтобы увидеть прогресс</div>
+        <canvas id="progressChart" style="display:none"></canvas>
+      </div>
+      <div id="prBadgeWrap" style="margin-top:8px;"></div>
+    </div>
+
+    <!-- BODY WEIGHT TAB -->
+    <div id="ptab-bodyweight" style="display:none">
+      <div class="section-title">ВЕС ТЕЛА</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;">
+        <div class="weight-current" id="currentWeightDisplay">—</div>
+        <div class="weight-label">кг · сейчас</div>
+        <div class="weight-input-row" style="margin-top:12px;">
+          <input type="number" class="weight-num-input" id="bodyWeightInput" placeholder="70.5" step="0.1" inputmode="decimal">
+          <button class="btn-weight-log" onclick="logBodyWeight()">+ Записать</button>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-empty" id="bwChartEmpty">Добавь первую запись</div>
+        <canvas id="bodyWeightChart" style="display:none"></canvas>
+      </div>
+    </div>
+
+    <!-- PHOTOS TAB -->
+    <div id="ptab-photos" style="display:none">
+      <div class="section-title">ФОТО ПРОГРЕССА</div>
+      <div class="photo-grid" id="photoGrid">
+        <button class="photo-add-btn" onclick="addProgressPhoto()">+</button>
+      </div>
+      <input type="file" id="photoFileInput" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoUpload(event)">
+    </div>
+
+    <!-- RECORDS TAB -->
+    <div id="ptab-records" style="display:none">
+      <div class="section-title">ЛИЧНЫЕ РЕКОРДЫ</div>
+      <div id="prList"></div>
+    </div>
   </div>
+</div>
+
+
+<!-- PROGRAMS PAGE -->
+<div class="page" id="page-programs">
+  <div class="section">
+    <div class="section-title" style="margin-top:16px;">ПРОГРАММЫ ТРЕНИРОВОК</div>
+    <div class="program-tabs">
+      <button class="prog-tab active" onclick="switchProgDay('A',this)">A</button>
+      <button class="prog-tab" onclick="switchProgDay('B',this)">B</button>
+      <button class="prog-tab" onclick="switchProgDay('C',this)">C</button>
+    </div>
+
+    <div id="progday-A" class="prog-day active"></div>
+    <div id="progday-B" class="prog-day"></div>
+    <div id="progday-C" class="prog-day"></div>
+
+    <button class="btn-load-program" onclick="loadProgramToToday()">🏋️ Загрузить в сегодняшнюю тренировку</button>
+    <button class="add-set-btn" style="margin-top:8px;padding:12px;" onclick="addExToProgram()">+ Добавить упражнение</button>
+    <button class="add-set-btn" style="margin-top:6px;padding:12px;" onclick="aiGenerateProgram()">🤖 Составить программу через AI</button>
+  </div>
+</div>
+
+<!-- Photo full modal -->
+<div class="photo-full-modal hidden" id="photoFullModal">
+  <img id="photoFullImg" src="" alt="">
+  <div class="photo-full-date" id="photoFullDate"></div>
+  <button class="photo-full-close" onclick="closePhotoModal()">Закрыть</button>
+  <button class="photo-full-delete" onclick="deletePhoto()">Удалить</button>
 </div>
 
 <!-- Bottom Nav -->
@@ -969,6 +1146,10 @@
   <div class="nav-item" onclick="switchPage('progress',null,'progress-nav')" id="progress-nav">
     <div class="nav-icon">📈</div>
     <div class="nav-label">Прогресс</div>
+  </div>
+  <div class="nav-item" onclick="switchPage('programs',null,'programs-nav')" id="programs-nav">
+    <div class="nav-icon">🗓</div>
+    <div class="nav-label">Программы</div>
   </div>
   <div class="nav-item" onclick="showInstall()">
     <div class="nav-icon">📲</div>
@@ -1402,7 +1583,7 @@ function switchPage(name, tabEl, navId) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
   if (tabEl) tabEl.classList.add('active');
-  const navMap = { today:'today-nav', history:'history-nav', manage:'manage-nav', ai:'ai-nav', progress:'progress-nav' };
+  const navMap = { today:'today-nav', history:'history-nav', manage:'manage-nav', ai:'ai-nav', progress:'progress-nav', programs:'programs-nav' };
   const navEl = document.getElementById(navMap[name]);
   if (navEl) navEl.classList.add('active');
 
@@ -1410,6 +1591,7 @@ function switchPage(name, tabEl, navId) {
   if (name === 'manage') renderManage();
   if (name === 'ai') initAiPage();
   if (name === 'progress') { saveToHistory(); initProgressPage(); }
+  if (name === 'programs') initProgramsPage();
 }
 
 
@@ -1589,7 +1771,44 @@ async function sendAiMsg() {
   await callAI();
 }
 
+// ---- AI CACHE ----
+let aiCache = JSON.parse(localStorage.getItem('aiCache') || '{}');
+let aiRequestCount = parseInt(localStorage.getItem('aiRequestCount') || '0');
+let aiRequestMonth = localStorage.getItem('aiRequestMonth') || '';
+
+function getCacheKey(messages) {
+  const last = messages[messages.length - 1];
+  return (last?.content || '').slice(0, 120).toLowerCase().replace(/\s+/g, ' ');
+}
+
+function updateAiCounter(fromCache) {
+  const el = document.getElementById('aiCounterVal');
+  if (!el) return;
+  const now = new Date().toISOString().slice(0, 7);
+  if (aiRequestMonth !== now) { aiRequestCount = 0; aiRequestMonth = now; }
+  if (!fromCache) {
+    aiRequestCount++;
+    localStorage.setItem('aiRequestCount', aiRequestCount);
+    localStorage.setItem('aiRequestMonth', aiRequestMonth);
+  }
+  el.innerHTML = aiRequestCount + (fromCache ? ' <span class="ai-cache-badge">кэш</span>' : '');
+}
+
 async function callAI() {
+  const recentMessages = aiHistory.slice(-4); // Only last 4 = less tokens
+  const cacheKey = getCacheKey(recentMessages);
+
+  // Check cache first
+  if (aiCache[cacheKey]) {
+    const typing = addAiMsg('⏳', 'bot typing');
+    await new Promise(r => setTimeout(r, 300));
+    typing.textContent = aiCache[cacheKey];
+    typing.classList.remove('typing');
+    aiHistory.push({ role: 'assistant', content: aiCache[cacheKey] });
+    updateAiCounter(true);
+    return;
+  }
+
   const typing = addAiMsg('⏳', 'bot typing');
   try {
     const res = await fetch('https://api.deepseek.com/chat/completions', {
@@ -1599,9 +1818,9 @@ async function callAI() {
         model: 'deepseek-chat',
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
-          ...aiHistory.slice(-12)
+          ...recentMessages
         ],
-        max_tokens: 500,
+        max_tokens: 400,
         temperature: 0.7,
         stream: false
       })
@@ -1612,7 +1831,14 @@ async function callAI() {
     typing.textContent = reply;
     typing.classList.remove('typing');
     aiHistory.push({ role: 'assistant', content: reply });
-    if (aiHistory.length > 16) aiHistory = aiHistory.slice(-16);
+    if (aiHistory.length > 8) aiHistory = aiHistory.slice(-8);
+
+    // Save to cache (max 50 entries)
+    aiCache[cacheKey] = reply;
+    const keys = Object.keys(aiCache);
+    if (keys.length > 50) delete aiCache[keys[0]];
+    localStorage.setItem('aiCache', JSON.stringify(aiCache));
+    updateAiCounter(false);
   } catch(e) {
     typing.textContent = '❌ ' + e.message;
     typing.classList.remove('typing');
@@ -1733,6 +1959,227 @@ function renderPRList() {
     `).join('');
 }
 
+
+// ---- BODY WEIGHT TRACKER ----
+let bodyWeights = JSON.parse(localStorage.getItem('bodyWeights') || '[]');
+let bwChartInstance = null;
+
+function logBodyWeight() {
+  const val = parseFloat(document.getElementById('bodyWeightInput').value);
+  if (!val || val < 20 || val > 300) { alert('Введи корректный вес'); return; }
+  const entry = { date: todayKey, weight: val };
+  bodyWeights = bodyWeights.filter(e => e.date !== todayKey);
+  bodyWeights.push(entry);
+  bodyWeights.sort((a,b) => a.date.localeCompare(b.date));
+  localStorage.setItem('bodyWeights', JSON.stringify(bodyWeights));
+  document.getElementById('bodyWeightInput').value = '';
+  renderBodyWeightChart();
+}
+
+function renderBodyWeightChart() {
+  const current = bodyWeights[bodyWeights.length - 1];
+  document.getElementById('currentWeightDisplay').textContent = current ? current.weight + ' кг' : '—';
+
+  const canvas = document.getElementById('bodyWeightChart');
+  const empty = document.getElementById('bwChartEmpty');
+
+  if (!bodyWeights.length) {
+    canvas.style.display = 'none'; empty.style.display = 'block'; return;
+  }
+  canvas.style.display = 'block'; empty.style.display = 'none';
+
+  if (bwChartInstance) bwChartInstance.destroy();
+  bwChartInstance = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: bodyWeights.map(e => e.date.slice(5)),
+      datasets: [{
+        data: bodyWeights.map(e => e.weight),
+        borderColor: '#ff4757',
+        backgroundColor: 'rgba(255,71,87,0.1)',
+        pointBackgroundColor: '#ff4757',
+        pointRadius: 4, tension: 0.3, fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#666', font: { size: 11 } }, grid: { color: '#2a2a2a' } },
+        y: { ticks: { color: '#666', callback: v => v+'кг' }, grid: { color: '#2a2a2a' } }
+      }
+    }
+  });
+}
+
+// ---- PHOTO PROGRESS ----
+let progressPhotos = JSON.parse(localStorage.getItem('progressPhotos') || '[]');
+let viewingPhotoIdx = -1;
+
+function addProgressPhoto() {
+  document.getElementById('photoFileInput').click();
+}
+
+function handlePhotoUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const entry = { date: todayKey, src: ev.target.result };
+    progressPhotos.unshift(entry);
+    if (progressPhotos.length > 30) progressPhotos = progressPhotos.slice(0, 30);
+    localStorage.setItem('progressPhotos', JSON.stringify(progressPhotos));
+    renderPhotoGrid();
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function renderPhotoGrid() {
+  const grid = document.getElementById('photoGrid');
+  if (!grid) return;
+  grid.innerHTML = '<button class="photo-add-btn" onclick="addProgressPhoto()">+</button>';
+  progressPhotos.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'photo-thumb';
+    div.innerHTML = `<img src="${p.src}" loading="lazy"><div class="photo-date">${p.date.slice(5)}</div>`;
+    div.onclick = () => openPhotoModal(i);
+    grid.appendChild(div);
+  });
+}
+
+function openPhotoModal(idx) {
+  viewingPhotoIdx = idx;
+  const p = progressPhotos[idx];
+  document.getElementById('photoFullImg').src = p.src;
+  document.getElementById('photoFullDate').textContent = p.date;
+  document.getElementById('photoFullModal').classList.remove('hidden');
+}
+
+function closePhotoModal() {
+  document.getElementById('photoFullModal').classList.add('hidden');
+}
+
+function deletePhoto() {
+  if (viewingPhotoIdx < 0) return;
+  if (!confirm('Удалить фото?')) return;
+  progressPhotos.splice(viewingPhotoIdx, 1);
+  localStorage.setItem('progressPhotos', JSON.stringify(progressPhotos));
+  closePhotoModal();
+  renderPhotoGrid();
+}
+
+// ---- PROGRESS PAGE TABS ----
+function showProgressTab(tab, btn) {
+  ['weights','bodyweight','photos','records'].forEach(t => {
+    document.getElementById('ptab-' + t).style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('#page-progress .ai-chip').forEach(c => c.classList.remove('active-chip'));
+  btn.classList.add('active-chip');
+  if (tab === 'bodyweight') renderBodyWeightChart();
+  if (tab === 'photos') renderPhotoGrid();
+  if (tab === 'records') renderPRList();
+}
+
+// ---- A/B/C PROGRAMS ----
+const DEFAULT_PROGRAMS = {
+  A: [
+    { name:'Жим лёжа', sets:4, reps:'8-10' },
+    { name:'Жим гантелей сидя', sets:3, reps:'10-12' },
+    { name:'Разгибания трицепс', sets:3, reps:'12-15' },
+  ],
+  B: [
+    { name:'Приседания', sets:4, reps:'8-10' },
+    { name:'Румынская тяга', sets:3, reps:'10-12' },
+    { name:'Сгибания бицепс', sets:3, reps:'12-15' },
+  ],
+  C: [
+    { name:'Становая тяга', sets:4, reps:'5-6' },
+    { name:'Подтягивания', sets:4, reps:'8-10' },
+    { name:'Жим гантелей сидя', sets:3, reps:'10-12' },
+  ]
+};
+
+let programs = JSON.parse(localStorage.getItem('programs') || 'null') || DEFAULT_PROGRAMS;
+let activeProgramDay = 'A';
+
+function savePrograms() {
+  localStorage.setItem('programs', JSON.stringify(programs));
+}
+
+function switchProgDay(day, btn) {
+  activeProgramDay = day;
+  document.querySelectorAll('.prog-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.prog-day').forEach(d => d.classList.remove('active'));
+  document.getElementById('progday-' + day).classList.add('active');
+}
+
+function initProgramsPage() {
+  ['A','B','C'].forEach(day => renderProgramDay(day));
+}
+
+function renderProgramDay(day) {
+  const container = document.getElementById('progday-' + day);
+  if (!container) return;
+  const list = programs[day] || [];
+  container.innerHTML = list.map((ex, i) => `
+    <div class="prog-ex-row">
+      <div class="prog-ex-name">${ex.name}</div>
+      <div class="prog-ex-sets">${ex.sets}×${ex.reps}</div>
+      <button onclick="removeProgramEx('${day}',${i})" style="background:transparent;border:none;color:var(--accent2);font-size:16px;cursor:pointer;">✕</button>
+    </div>
+  `).join('');
+}
+
+function removeProgramEx(day, idx) {
+  programs[day].splice(idx, 1);
+  savePrograms(); renderProgramDay(day);
+}
+
+function addExToProgram() {
+  const exName = exercises[0]?.name || 'Упражнение';
+  const name = prompt('Название упражнения:', exName);
+  if (!name) return;
+  const sets = parseInt(prompt('Количество подходов:', '3')) || 3;
+  const reps = prompt('Повторений:', '8-12') || '8-12';
+  if (!programs[activeProgramDay]) programs[activeProgramDay] = [];
+  programs[activeProgramDay].push({ name, sets, reps });
+  savePrograms(); renderProgramDay(activeProgramDay);
+}
+
+function loadProgramToToday() {
+  const prog = programs[activeProgramDay];
+  if (!prog?.length) { alert('Программа пустая'); return; }
+
+  // Add exercises from program to today's list (if not already there)
+  prog.forEach(pe => {
+    const exists = exercises.find(e => e.name === pe.name);
+    if (!exists) {
+      exercises.push({ id: Date.now() + Math.random(), name: pe.name, muscle: '—', defaultSets: pe.sets });
+    }
+    // Reset sets for today
+    const ex = exercises.find(e => e.name === pe.name);
+    if (ex) {
+      sessionSets[ex.id] = Array.from({length: pe.sets}, () => ({ weight: '', reps: pe.reps.split('-')[0], done: false }));
+    }
+  });
+
+  save();
+  switchPage('today', null, 'today-nav');
+  document.querySelectorAll('.tab').forEach((t,i) => { if(i===0) t.classList.add('active'); else t.classList.remove('active'); });
+  renderExercises();
+  alert('День ' + activeProgramDay + ' загружен! ✅');
+}
+
+function aiGenerateProgram() {
+  if (!aiKey) { alert('Сначала введи DeepSeek API ключ во вкладке AI'); return; }
+  const context = getCurrentExercises();
+  const msg = context + '\n\nСоставь программу A/B/C (3 дня) для набора массы. Для каждого дня укажи 3-4 упражнения с подходами и повторениями. Формат: ДЕНЬ A: Упражнение — 4×8-10';
+  sendAiWithText(msg, 'Составить A/B/C программу');
+  switchPage('ai', null, 'ai-nav');
+  document.querySelectorAll('.tab').forEach(t => { t.classList.toggle('active', t.textContent.includes('AI')); });
+}
 // ---- INIT ----
 renderExercises();
 // initGoogleUI called on window load above
